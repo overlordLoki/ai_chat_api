@@ -1,55 +1,75 @@
+
 # ai_chat_api for mayor_sim
 
 ## Overview
 
-The `ai_chat_api` is a crucial component of the "mayor_sim" game. It facilitates communication between non-player characters (NPCs) and the game world, utilizing a Language Model (LLM) for natural language conversations.
+The `ai_chat_api` is a vital component of the "mayor_sim" game. It provides an API for generating responses to prompts using the Loki service, which is integral to the game's functionality.
 
-## Features
+## JavaScript Code (index.js)
 
-- **NPC Chat**: The API enables NPCs in the "mayor_sim" game to engage in dynamic and context-aware conversations with players.
+The following JavaScript code in `index.js` sets up an Express server that listens for POST requests to generate responses based on provided prompts.
 
-- **Language Model Integration**: It seamlessly integrates with a Language Model (LLM) to generate realistic and diverse NPC responses.
+```javascript
+const express = require('express');
+const axios = require('axios');
+const bodyParser = require('body-parser');
+const app = express();
+const port = 3001;
 
-## Installation
+app.use(bodyParser.json());
 
-To install and use the `ai_chat_api`, follow these steps:
+app.post('/generate', async (req, res) => {
+  const { prompt } = req.body;
+  date = new Date();
+  console.log('Request received at: ', date.getHours(), ':', date.getMinutes(), ':', date.getSeconds());
+  start = new Date().getTime();
+  try {
+    const response = await axios.post('https://api.overlord-loki.com/api/v1/generate', {
+      prompt,
+      max_new_tokens: 500,
+      auto_max_new_tokens: false,
+      // Add other request parameters here as needed
+    });
 
-1. Clone this repository to your local machine:
+    if (response.status === 200) {
+      const result = response.data.results[0].text;
+      res.json({ result });
+    } else {
+      res.status(response.status).json({ error: 'Request to the Loki API failed' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+  console.log('Time taken: ', new Date().getTime() - start);
+});
 
-   ```bash
-   git clone https://github.com/yourusername/ai_chat_api.git
-   ```
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
+```
 
-2. Install the required dependencies:
+## Python Code (test.py)
 
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. Configure the API with your LLM credentials by editing the `config.json` file.
-
-4. Start the API server:
-
-   ```bash
-   python app.py
-   ```
-
-## Usage
-
-To utilize the API in your "mayor_sim" game, you can make HTTP requests to the API endpoints for NPC interactions. For example:
+The following Python code in `test.py` demonstrates how to send a POST request to the Loki API using the `requests` library, providing a prompt and receiving a response.
 
 ```python
 import requests
+
 # Define the URL to send a POST request to
 url = 'https://game.overlord-loki.com/generate'
+
 # Define the headers for the request
 headers = {'Content-Type': 'application/json'}
+
 # Define the prompt that will be sent as JSON data
 prompt = 'In order to make homemade bread, follow these steps:\n1)'
+
 # Create a dictionary with the prompt
 data = {'prompt': prompt}
+
 # Send a POST request to the specified URL with JSON data and headers
 response = requests.post(url, json=data, headers=headers)
+
 # Check if the response status code is 200 (OK)
 if response.status_code == 200:
     # If the response is successful, parse the JSON content
@@ -61,30 +81,17 @@ else:
     print(f'Request failed with status code {response.status_code}')
 ```
 
-## Configuration
 
-Make sure to configure the API by editing the `config.json` file with your specific LLM credentials and any other relevant settings.
+## Usage
 
-```json
-{
-  "llm_api_key": "your_llm_api_key",
-  "llm_endpoint": "https://your-llm-endpoint.com/api",
-  "port": 5000
-}
-```
+You can utilize the `ai_chat_api` for generating responses to prompts in your "mayor_sim" game by sending HTTP POST requests to the provided endpoints, as demonstrated in `test.py`.
 
-## Contributing
 
-If you want to contribute to this project, please read our [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Contact
 
-For any questions or feedback, feel free to reach out to tymonisat@gmail.com.
+For any questions or feedback, feel free to reach out to [your email address].
 
 ---
 
-Happy gaming with "mayor_sim" and enjoy realistic NPC interactions with the `ai_chat_api`! 😄
+Enjoy using the `ai_chat_api` in your "mayor_sim" game and enhancing the gaming experience with AI-powered responses!
